@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>InsightAssistant - Local AI Text Analyzer</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>InsightAssistant</h1>
+    <form id="analyze-form">
+        <textarea name="text" id="text" placeholder="Paste or write your text here..." rows="6" cols="60" required></textarea><br>
+        <button type="submit">Analyze</button>
+    </form>
+
+    <div id="result" style="margin-top:1em"></div>
+
+    <h2>Previous Analyses</h2>
+    <table border="1" cellpadding="4">
+        <tr><th>Text</th><th>Summary</th><th>Persons</th><th>Category</th></tr>
+        {% for entry in entries %}
+        <tr>
+            <td>{{ entry.original_text|e }}</td>
+            <td>{{ entry.summary|e }}</td>
+            <td>{{ entry.persons|e }}</td>
+            <td>{{ entry.category|e }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <script>
+        const form = document.getElementById('analyze-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = document.getElementById('text').value;
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = "Analyzing...";
+            const formData = new FormData();
+            formData.append('text', text);
+
+            const resp = await fetch('/analyze', {method: 'POST', body: formData});
+            const data = await resp.json();
+
+            if (data.error) {
+                resultDiv.textContent = data.error;
+            } else {
+                resultDiv.innerHTML = `<b>Summary:</b> ${data.summary}<br>
+                                       <b>Persons:</b> ${data.persons}<br>
+                                       <b>Category:</b> ${data.category}`;
+                setTimeout(() => window.location.reload(), 1000); // Reload to show new entry
+            }
+        });
+    </script>
+</body>
+</html>
