@@ -71,7 +71,7 @@ def call_ollama(text: str) -> dict:
     Response:"""
 
     payload = {
-        "model":  "llama3",
+        "model":  "mistral",  # Changed from llama3 to mistral (the model installed on this PC)
         "prompt": prompt,
         "format": "json",
         "stream": False
@@ -158,9 +158,38 @@ def analyze():
         })
 
     except Exception as exc:
-        
+
         db.session.rollback()
         return jsonify({"error": "Analysis failed"}), 500
+
+# ── NEW FEATURE: Export to JSON ─────────────────────────────────────────────
+# This route allows users to download all analyses as a JSON file
+# Added by: Student Project
+@app.route("/export")
+def export_to_json():
+    """
+    Export all saved analyses to a JSON file.
+    Returns: JSON file with summary, category, and persons for each analysis
+    """
+    # Get all analyses from the database
+    all_entries = Analysis.query.all()
+
+    # Create a list to hold all the data
+    export_data = []
+
+    # Loop through each analysis and add it to our list
+    for entry in all_entries:
+        export_data.append({
+            "id": entry.id,
+            "summary": entry.summary,
+            "category": entry.category,
+            "persons": entry.persons,
+            "original_text": entry.original_text
+        })
+
+    # Return the data as JSON with proper formatting
+    # The jsonify function converts our Python list to JSON format
+    return jsonify(export_data)
 
 # ── Main entry point ────────────────────────────────────────────────────────
 if __name__ == "__main__":

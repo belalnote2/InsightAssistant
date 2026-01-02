@@ -15,6 +15,11 @@
     <div id="result" style="margin-top:1em"></div>
 
     <h2>Previous Analyses</h2>
+
+    <!-- NEW FEATURE: Export Button (Added by Student) -->
+    <!-- This button lets users download all analyses as a JSON file -->
+    <button id="export-btn" style="margin-bottom: 10px;">Export to JSON</button>
+
     <table border="1" cellpadding="4">
         <tr><th>Text</th><th>Summary</th><th>Persons</th><th>Category</th></tr>
         {% for entry in entries %}
@@ -48,6 +53,31 @@
                                        <b>Category:</b> ${data.category}`;
                 setTimeout(() => window.location.reload(), 1000); // Reload to show new entry
             }
+        });
+
+        // NEW FEATURE: Export button functionality (Added by Student)
+        // This code handles downloading the JSON file when user clicks Export button
+        const exportBtn = document.getElementById('export-btn');
+        exportBtn.addEventListener('click', async () => {
+            // Fetch the data from our export route
+            const response = await fetch('/export');
+            const jsonData = await response.json();
+
+            // Convert the data to a nice formatted JSON string
+            const jsonString = JSON.stringify(jsonData, null, 2);
+
+            // Create a downloadable file
+            const blob = new Blob([jsonString], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+
+            // Create a temporary link and click it to download the file
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'analyses_export.json'; // The name of the downloaded file
+            a.click();
+
+            // Clean up
+            URL.revokeObjectURL(url);
         });
     </script>
 </body>
